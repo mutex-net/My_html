@@ -1,37 +1,493 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>免费点子实现机</title>
+    <title>免费点子实现机 - 创意变现平台</title>
     <style>
-  header {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    background: #7c7c7c;
-    padding: 15px 30px;
-    box-shadow: 0 2px 10px rgba(148, 148, 148, 0.3);
-  }
-  body {
-    margin: 0;
-    padding-top: 60px;
-    background: #272727;
-    font-family: Arial;
-  }
-</style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* 头部标题区域 */
+        .header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .header h1 {
+            font-size: 42px;
+            margin-bottom: 15px;
+            background: linear-gradient(90deg, #00d4ff, #00ff88);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .header .tagline {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.85);
+            margin: 8px 0;
+            font-weight: 400;
+        }
+
+        /* 工作栏容器 - 玻璃拟态效果 */
+        .toolbar-container {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            margin: 0;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 工作栏 - 可横向滚动 */
+        .toolbar {
+            display: flex;
+            gap: 15px;
+            min-width: 100%;
+            width: max-content;
+            padding: 5px;
+            justify-content: center;
+        }
+
+        /* 工具栏按钮样式 - 玻璃效果 */
+        .tool-button {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 24px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.9);
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            user-select: none;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-button:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .tool-button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-button.active {
+            background: rgba(0, 212, 255, 0.25);
+            color: #00ffcc;
+            border: 1px solid rgba(0, 255, 204, 0.4);
+            box-shadow: 0 0 15px rgba(0, 255, 204, 0.3);
+        }
+
+        /* 图标样式 */
+        .tool-button .icon {
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+
+        /* 分割线 */
+        .toolbar-divider {
+            width: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 8px 4px;
+        }
+
+        /* 内容区域 - 玻璃拟态 */
+        .content-area {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .content-section {
+            display: none;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .content-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-section h2 {
+            color: #00ffcc;
+            margin-bottom: 25px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        .content-section p {
+            color: rgba(255, 255, 255, 0.85);
+            line-height: 1.8;
+            margin-bottom: 20px;
+            font-size: 17px;
+        }
+
+        /* 点子卡片网格 */
+        .idea-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .idea-card {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .idea-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .idea-card h3 {
+            color: #00d4ff;
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .idea-card p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .idea-card .tag {
+            display: inline-block;
+            background: rgba(0, 212, 255, 0.15);
+            color: #00d4ff;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            margin-right: 8px;
+            margin-top: 8px;
+        }
+
+        /* 软件展示网格 */
+        .software-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+
+        .software-card {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .software-card:hover {
+            transform: scale(1.03);
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .software-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .software-card h3 {
+            color: #00ffcc;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .software-card p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 32px;
+            }
+            
+            .header .tagline {
+                font-size: 16px;
+            }
+            
+            .toolbar {
+                justify-content: flex-start;
+                padding: 5px 10px;
+            }
+            
+            .tool-button {
+                padding: 10px 18px;
+                font-size: 14px;
+            }
+            
+            .content-section {
+                padding: 25px;
+            }
+            
+            .idea-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* 滚动条美化 */
+        .toolbar-container::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .toolbar-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .toolbar-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 212, 255, 0.5);
+            border-radius: 3px;
+        }
+
+        .toolbar-container::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 255, 204, 0.7);
+        }
+    </style>
 </head>
 <body>
-    <font size="5" style="color: rgb(255, 255, 255);">免费点子实现机</font>
-    <br>
-    <beader>
-        <a href=".html" style="color: rgb(67, 133, 196);">首页</a>
-        <a href=".html" style="color: rgb(67, 133, 196);">大伙的点子</a>
-        <a href=".html" style="color: rgb(67, 133, 196);">软件集合</a>
-    </beader>
-    <br>
-    <font size="5" style="color: rgb(255, 255, 255);">你来提点子，我来帮你实现</font>
-    <br>
-    <font size="5" style="color: rgb(255, 255, 255);">只要你敢提，我就敢帮你做</font>
+    <!-- 头部区域 -->
+    <div class="header">
+        <h1>免费点子实现机</h1>
+        <div class="tagline">你来提点子，我来帮你实现</div>
+        <div class="tagline">只要你敢提，我就敢帮你做</div>
+    </div>
+
+    <!-- 工作栏容器 -->
+    <div class="toolbar-container">
+        <div class="toolbar" id="toolbar">
+            <!-- 导航按钮组 -->
+            <button class="tool-button active" onclick="switchSection('intro', this)">
+                <span class="icon">🏠</span>
+                <span>首页介绍</span>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button class="tool-button" onclick="switchSection('ideas', this)">
+                <span class="icon">💡</span>
+                <span>点子中心</span>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button class="tool-button" onclick="switchSection('software', this)">
+                <span class="icon">🛠️</span>
+                <span>软件集合</span>
+            </button>
+            
+            <div class="toolbar-divider"></div>
+            
+            <button class="tool-button" onclick="switchSection('about', this)">
+                <span class="icon">ℹ️</span>
+                <span>关于我们</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 内容区域 -->
+    <div class="content-area">
+        <!-- 首页介绍 -->
+        <div id="intro" class="content-section active">
+            <h2>欢迎来到免费点子实现机</h2>
+            <p>这是一个独特的创意实现平台。我们相信每个人都有改变世界的点子，但缺少实现的途径。这里，我们为你搭建从创意到现实的桥梁。</p>
+            
+            <h3 style="color: #00d4ff; margin-top: 30px; margin-bottom: 15px;">我能做什么？</h3>
+            <p>🚀 <strong>技术实现：</strong> 把你的软件创意变成可运行的程序</p>
+            <p>🎨 <strong>设计优化：</strong> 帮你完善产品原型和UI设计</p>
+            <p>📱 <strong>应用开发：</strong> 开发网站、小程序、移动应用</p>
+            <p>🤖 <strong>自动化工具：</strong> 制作提升效率的各类脚本</p>
+            
+            <h3 style="color: #00d4ff; margin-top: 30px; margin-bottom: 15px;">如何开始？</h3>
+            <p>只需点击"点子中心"，提交你的创意描述，我们会评估可行性并与你联系。无论是小工具还是大项目，我们都乐意尝试！</p>
+            
+            <div class="idea-grid">
+                <div class="idea-card">
+                    <h3>🎯 完全免费</h3>
+                    <p>所有基础服务完全免费，我们相信好点子本身的价值</p>
+                </div>
+                <div class="idea-card">
+                    <h3>⚡ 快速响应</h3>
+                    <p>48小时内评估你的点子，并给出初步实现方案</p>
+                </div>
+                <div class="idea-card">
+                    <h3>🛡️ 隐私保护</h3>
+                    <p>你的点子将受到严格保密，可签署保密协议</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 点子中心 -->
+        <div id="ideas" class="content-section">
+            <h2>点子中心</h2>
+            <p>在这里你可以提交自己的创意点子，或查看其他人分享的灵感。让我们一起把想法变成现实！</p>
+            
+            <button class="tool-button" onclick="alert('提交功能开发中，即将开放！')" style="background: rgba(0, 255, 204, 0.2); color: #00ffcc; border: 1px solid #00ffcc; margin: 20px 0;">
+                <span class="icon">➕</span>
+                <span>提交新点子</span>
+            </button>
+
+            <div class="idea-grid">
+                <div class="idea-card">
+                    <h3>开发中</h3>
+                    <p>开发中</p>
+                    <div>
+                        <span class="tag">开发中</span>
+                        <span class="tag">开发中</span>
+                        <span class="tag">开发中</span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 软件集合 -->
+        <div id="software" class="content-section">
+            <h2>软件集合</h2>
+            <p>这里是我们开发的开源软件集合，所有工具完全免费，欢迎下载使用！</p>
+
+                <div class="software-card">
+                    <div class="software-icon">📝</div>
+                    <h3>Markdown Pro</h3>
+                    <p>实验文件</p>
+                    <button class="tool-button" style="margin-top: 15px; background: rgba(0, 212, 255, 0.2); color: #00d4ff; border: 1px solid #00d4ff;">
+                        <span class="icon">⬇️</span>
+                        <span>下载</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关于我们 -->
+        <div id="about" class="content-section">
+            <h2>关于我们</h2>
+            <p>我们是一群热爱编程、充满激情的开发者社区。我们相信技术应该服务于创意，而不是成为创意的障碍。</p>
+            
+            <h3 style="color: #00d4ff; margin-top: 30px; margin-bottom: 15px;">我们的使命</h3>
+            <p>让每个人都能实现自己的创意，无论你是否懂技术。我们提供免费的技术支持，帮助验证和实现你的点子。</p>
+            
+            <h3 style="color: #00d4ff; margin-top: 30px; margin-bottom: 15px;">联系方式</h3>
+            <p>📧 邮箱：<a href="mailto:ideas@freedomtool.com" style="color: #00ffcc;">3913257317@qq.com</a></p>
+            <p>💬 微信：mutex114514</p>
+            <p>🐙 GitHub：<a href="#" style="color: #00ffcc;">github.com/mutex-net</a></p>
+            
+            <h3 style="color: #00d4ff; margin-top: 30px; margin-bottom: 15px;">加入我们</h3>
+            <p>如果你是开发者，欢迎加入我们的开源社区！让我们一起帮助更多人实现创意。</p>
+        </div>
+    </div>
+
+    <script>
+        // 切换内容区域
+        function switchSection(sectionId, button) {
+            // 移除所有按钮的激活状态
+            document.querySelectorAll('.tool-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 添加当前按钮的激活状态
+            button.classList.add('active');
+            
+            // 隐藏所有内容区域
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // 显示对应的内容区域
+            const targetSection = document.getElementById(sectionId);
+            if (targetSection) {
+                targetSection.classList.add('active');
+            }
+            
+            // 滚动到内容区域
+            document.querySelector('.content-area').scrollIntoView({ 
+                behavior: 'smooth',
+                block: 'start'
+            });
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 检查是否为移动设备
+            const isMobile = window.innerWidth <= 768;
+            
+            // 如果是桌面端，确保工具栏居中显示
+            if (!isMobile) {
+                const container = document.querySelector('.toolbar-container');
+                const toolbar = document.querySelector('.toolbar');
+                
+                // 监听滚动事件，实现阴影变化
+                container.addEventListener('scroll', function() {
+                    if (this.scrollLeft > 0) {
+                        this.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.3)';
+                    } else {
+                        this.style.boxShadow = '0 4px 20px rgba(0, 0, 0, 0.2)';
+                    }
+                });
+            }
+            
+            console.log('免费点子实现机已加载完成！');
+        });
+    </script>
 </body>
 </html>
